@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>https://zzj.cool/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Fri, 07 Jan 2022 10:33:38 +0800</lastBuildDate><atom:link href="https://zzj.cool/index.xml" rel="self" type="application/rss+xml"/><item><title>Nginx 相关配置</title><link>https://zzj.cool/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</link><pubDate>Fri, 07 Jan 2022 10:33:38 +0800</pubDate><guid>https://zzj.cool/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</guid><description>&lt;h2 id="docker启动nginx">Docker启动Nginx&lt;/h2>
+&lt;p>可以使用docker-compose快速的启动Nginx
+docker-compose.yaml文件：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="nt">version&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s1">&amp;#39;3&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">nginx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">container_name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">nginx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">network_mode&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;host&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w"> &lt;/span>- &lt;span class="l">./nginx:/etc/nginx/conf.d&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">unless-stopped&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>可以在当前目录下的nginx目录添加任意配置&lt;/p>
+&lt;h2 id="nginx-反向代理websocket">Nginx 反向代理Websocket&lt;/h2>
+&lt;pre tabindex="0">&lt;code class="language-conf" data-lang="conf"> server {
+listen 48265;
+server_name &amp;quot;&amp;quot;;
+location / {
+proxy_pass http://domain:48265;
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection &amp;quot;Upgrade&amp;quot;;
+}
+}
+&lt;/code>&lt;/pre>&lt;p>最后两行配置可以转发ws&lt;/p></description></item><item><title>Golang 内置包常用方法</title><link>https://zzj.cool/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</link><pubDate>Tue, 04 Jan 2022 19:43:41 +0800</pubDate><guid>https://zzj.cool/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</guid><description>&lt;h2 id="neturl">net/url&lt;/h2>
+&lt;h3 id="添加query">添加query&lt;/h3>
+&lt;p>原本有url:&lt;a class="link" href="http://domain.com" target="_blank" rel="noopener"
+>http://domain.com&lt;/a>,
+现在想要添加query参数变成:&lt;a class="link" href="http://domain.com?key=value" target="_blank" rel="noopener"
+>http://domain.com?key=value&lt;/a>&lt;/p>
+&lt;p>可以自己写一个方法去添加query参数。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="kd">func&lt;/span> &lt;span class="nf">TestURL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">testing&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">T&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Parse&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;http://domain.com&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nx">t&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Fatal&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="nf">URLAddQuery&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;key&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;value&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">api&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">String&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// URLAddQuery 提供一个URL，然后添加query参数
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">URLAddQuery&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">addr&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">URL&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">key&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">value&lt;/span> &lt;span class="kt">string&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nx">query&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">addr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Query&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="nx">query&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">key&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">value&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nx">addr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">RawQuery&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">query&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Encode&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="url拼接path">url拼接path&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go"> &lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Parse&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;http://domain.com&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nx">api&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Path&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;/api/test&amp;#34;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
