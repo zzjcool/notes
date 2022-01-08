@@ -1,8 +1,8 @@
-baseurl: https://example.com
+baseurl: https://zzj.cool
 languageCode: zh-cn
 theme: hugo-theme-stack
 paginate: 5
-title: zzjcool
+title: zzj的笔记
 
 # Change it to your Disqus shortname before using
 disqusShortname: hugo-theme-stack
