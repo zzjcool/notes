@@ -1,10 +1,10 @@
 <!doctype html><html lang=zh-cn>
 <head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Docker启动Nginx 可以使用docker-compose快速的启动Nginx docker-compose.yaml文件： version:&amp;#39;3&amp;#39;services:nginx:image:nginxcontainer_name:nginxnetwork_mode:&amp;#34;host&amp;#34;volumes:- ./ngin"><title>Nginx 相关配置</title>
-<link rel=canonical href=https://zzj.cool/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/>
+<link rel=canonical href=/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/>
 <link rel=stylesheet href=/scss/style.min.775dbd4fd34fda61c5273b4bc3415f7c9666414fb6c40aab164a7ded4397da98.css><meta property="og:title" content="Nginx 相关配置">
 <meta property="og:description" content="Docker启动Nginx 可以使用docker-compose快速的启动Nginx docker-compose.yaml文件： version:&amp;#39;3&amp;#39;services:nginx:image:nginxcontainer_name:nginxnetwork_mode:&amp;#34;host&amp;#34;volumes:- ./ngin">
-<meta property="og:url" content="https://zzj.cool/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/">
+<meta property="og:url" content="/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/">
 <meta property="og:site_name" content="zzj的笔记">
 <meta property="og:type" content="article"><meta property="article:section" content="Post"><meta property="article:tag" content="Nginx"><meta property="article:published_time" content="2022-01-07T10:33:38+08:00"><meta property="article:modified_time" content="2022-01-07T10:33:38+08:00">
 <meta name=twitter:title content="Nginx 相关配置">
@@ -60,6 +60,7 @@ docker-compose.yaml文件：</p>
         proxy_pass http://domain:48265;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Host $host;
         proxy_set_header Connection &quot;Upgrade&quot;;
         }
     }
