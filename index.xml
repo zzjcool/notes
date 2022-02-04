@@ -12,18 +12,33 @@ docker-compose.yaml文件：&lt;/p>
 &lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">unless-stopped&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>可以在当前目录下的nginx目录添加任意配置&lt;/p>
 &lt;h2 id="nginx-反向代理websocket">Nginx 反向代理Websocket&lt;/h2>
-&lt;pre tabindex="0">&lt;code class="language-conf" data-lang="conf"> server {
-listen 48265;
-server_name &amp;quot;&amp;quot;;
-location / {
-proxy_pass http://domain:48265;
-proxy_http_version 1.1;
-proxy_set_header Upgrade $http_upgrade;
-proxy_set_header Host $host;
-proxy_set_header Connection &amp;quot;Upgrade&amp;quot;;
-}
-}
-&lt;/code>&lt;/pre>&lt;p>最后两行配置可以转发ws&lt;/p></description></item><item><title>Golang 内置包常用方法</title><link>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</link><pubDate>Tue, 04 Jan 2022 19:43:41 +0800</pubDate><guid>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</guid><description>&lt;h2 id="neturl">net/url&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx"> &lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="kn">listen&lt;/span> &lt;span class="mi">48265&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">server_name&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="kn">proxy_pass&lt;/span> &lt;span class="s">http://domain:48265&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">proxy_http_version&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="s">.1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Upgrade&lt;/span> &lt;span class="nv">$http_upgrade&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Host&lt;/span> &lt;span class="nv">$host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Connection&lt;/span> &lt;span class="s">&amp;#34;Upgrade&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>最后一行配置可以转发ws&lt;/p>
+&lt;h2 id="nginx-直接显示系统目录">Nginx 直接显示系统目录&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx">&lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="kn">listen&lt;/span> &lt;span class="mi">8880&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">listen&lt;/span> &lt;span class="s">[::]:8880&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">server_name&lt;/span> &lt;span class="s">domain.com&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kn">root&lt;/span> &lt;span class="s">/data&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">autoindex&lt;/span> &lt;span class="no">on&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">autoindex_exact_size&lt;/span> &lt;span class="no">off&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">autoindex_localtime&lt;/span> &lt;span class="no">on&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kn">charset&lt;/span> &lt;span class="s">utf-8,gbk&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>root /data&lt;/code>表示实际的目录位置&lt;/p></description></item><item><title>Golang 内置包常用方法</title><link>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</link><pubDate>Tue, 04 Jan 2022 19:43:41 +0800</pubDate><guid>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</guid><description>&lt;h2 id="neturl">net/url&lt;/h2>
 &lt;h3 id="添加query">添加query&lt;/h3>
 &lt;p>原本有url:&lt;a class="link" href="http://domain.com" target="_blank" rel="noopener"
 >http://domain.com&lt;/a>,

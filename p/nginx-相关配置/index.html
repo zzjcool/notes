@@ -53,18 +53,36 @@ docker-compose.yaml文件：</p>
 </span><span class=w>    </span><span class=nt>restart</span><span class=p>:</span><span class=w> </span><span class=l>unless-stopped</span><span class=w>
 </span></code></pre></div><p>可以在当前目录下的nginx目录添加任意配置</p>
 <h2 id=nginx-反向代理websocket>Nginx 反向代理Websocket</h2>
-<pre tabindex=0><code class=language-conf data-lang=conf>    server {
-        listen 48265;
-        server_name &quot;&quot;;
-        location / {
-        proxy_pass http://domain:48265;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Host $host;
-        proxy_set_header Connection &quot;Upgrade&quot;;
-        }
-    }
-</code></pre><p>最后两行配置可以转发ws</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-nginx data-lang=nginx>    <span class=k>server</span> <span class=p>{</span>
+        <span class=kn>listen</span> <span class=mi>48265</span><span class=p>;</span>
+        <span class=kn>server_name</span> <span class=s>&#34;&#34;</span><span class=p>;</span>
+        <span class=kn>location</span> <span class=s>/</span> <span class=p>{</span>
+        <span class=kn>proxy_pass</span> <span class=s>http://domain:48265</span><span class=p>;</span>
+        <span class=kn>proxy_http_version</span> <span class=mi>1</span><span class=s>.1</span><span class=p>;</span>
+        <span class=kn>proxy_set_header</span> <span class=s>Upgrade</span> <span class=nv>$http_upgrade</span><span class=p>;</span>
+        <span class=kn>proxy_set_header</span> <span class=s>Host</span> <span class=nv>$host</span><span class=p>;</span>
+        <span class=kn>proxy_set_header</span> <span class=s>Connection</span> <span class=s>&#34;Upgrade&#34;</span><span class=p>;</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+</code></pre></div><p>最后一行配置可以转发ws</p>
+<h2 id=nginx-直接显示系统目录>Nginx 直接显示系统目录</h2>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-nginx data-lang=nginx><span class=k>server</span> <span class=p>{</span>
+    <span class=kn>listen</span>       <span class=mi>8880</span><span class=p>;</span>
+    <span class=kn>listen</span>       <span class=s>[::]:8880</span><span class=p>;</span>
+    <span class=kn>server_name</span>  <span class=s>domain.com</span><span class=p>;</span>
+
+
+    <span class=kn>location</span> <span class=s>/</span>
+    <span class=p>{</span>
+       <span class=kn>root</span> <span class=s>/data</span><span class=p>;</span>
+       <span class=kn>autoindex</span> <span class=no>on</span><span class=p>;</span>
+       <span class=kn>autoindex_exact_size</span> <span class=no>off</span><span class=p>;</span>
+       <span class=kn>autoindex_localtime</span> <span class=no>on</span><span class=p>;</span>
+       <span class=kn>charset</span> <span class=s>utf-8,gbk</span><span class=p>;</span>
+    <span class=p>}</span>
+
+<span class=p>}</span>
+</code></pre></div><p>其中<code>root /data</code>表示实际的目录位置</p>
 </section>
 <footer class=article-footer>
 <section class=article-tags>
@@ -135,6 +153,7 @@ Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=
 <ol>
 <li><a href=#docker启动nginx>Docker启动Nginx</a></li>
 <li><a href=#nginx-反向代理websocket>Nginx 反向代理Websocket</a></li>
+<li><a href=#nginx-直接显示系统目录>Nginx 直接显示系统目录</a></li>
 </ol>
 </nav>
 </div>
