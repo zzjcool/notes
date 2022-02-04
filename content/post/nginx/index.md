@@ -33,7 +33,7 @@ services:
 
 ## Nginx 反向代理Websocket
 
-```conf
+```nginx
     server {
         listen 48265;
         server_name "";
@@ -47,4 +47,27 @@ services:
     }
 ```
 
-最后两行配置可以转发ws
+最后一行配置可以转发ws
+
+## Nginx 直接显示系统目录
+
+```nginx
+server {
+    listen       8880;
+    listen       [::]:8880;
+    server_name  domain.com;
+
+
+    location /
+    {
+       root /data;
+       autoindex on;
+       autoindex_exact_size off;
+       autoindex_localtime on;
+       charset utf-8,gbk;
+    }
+
+}
+```
+
+其中`root /data`表示实际的目录位置

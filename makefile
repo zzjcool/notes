@@ -1,10 +1,10 @@
 
 commit=$(shell git rev-parse --short HEAD)
 date=$(shell date +'%Y%m%d-%H%M%S')
-REPO=ccr.ccs.tencentyun.com
-NAMESPACE=zzjcool
+REPO=registry.cn-shanghai.aliyuncs.com
+NAMESPACE=shuishan
 RELEASE_TAG:=release-$(commit)-$(date)
-IMAGE_NAME=notebook
+IMAGE_NAME=zzjnotebook
 IMAGE_URL=${REPO}/$(NAMESPACE)/$(IMAGE_NAME)
 
 .PHONY: build
@@ -18,3 +18,6 @@ release: build
 
 test:
 	docker run -it -p 9797:9000 ${IMAGE_URL}
+
+dev:
+	hugo server -D
