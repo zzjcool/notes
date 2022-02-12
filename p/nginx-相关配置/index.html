@@ -65,7 +65,25 @@ docker-compose.yaml文件：</p>
         <span class=p>}</span>
     <span class=p>}</span>
 </code></pre></div><p>最后一行配置可以转发ws</p>
-<h2 id=nginx-直接显示系统目录>Nginx 直接显示系统目录</h2>
+<p>有时候我们的nginx反向代理会出错，但是我们检查发现上游服务器是正常的，那这可能
+是因为反向代理后端发生dns解析的变动（如k8s服务重启或者ddns），所以
+需要配置nginx的dns解析（resolver 8.8.8.8），同时反向代理的后端地址需要写为变量：</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-nginx data-lang=nginx>    <span class=k>server</span> <span class=p>{</span>
+        <span class=kn>listen</span> <span class=mi>48265</span><span class=p>;</span>
+        <span class=kn>server_name</span> <span class=s>&#34;&#34;</span><span class=p>;</span>
+
+
+        <span class=kn>resolver</span> <span class=mi>119</span><span class=s>.29.29.29</span> <span class=mi>8</span><span class=s>.8.8.8</span> <span class=s>valid=30s</span><span class=p>;</span>
+        <span class=kn>set</span> <span class=nv>$proxy_pass_url</span> <span class=s>http://domain:48265</span><span class=p>;</span>
+        <span class=kn>location</span> <span class=s>/</span> <span class=p>{</span>
+        <span class=kn>proxy_pass</span> <span class=nv>$proxy_pass_url</span><span class=p>;</span>
+        <span class=kn>proxy_http_version</span> <span class=mi>1</span><span class=s>.1</span><span class=p>;</span>
+        <span class=kn>proxy_set_header</span> <span class=s>Upgrade</span> <span class=nv>$http_upgrade</span><span class=p>;</span>
+        <span class=kn>proxy_set_header</span> <span class=s>Host</span> <span class=nv>$host</span><span class=p>;</span>
+        <span class=kn>proxy_set_header</span> <span class=s>Connection</span> <span class=s>&#34;Upgrade&#34;</span><span class=p>;</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+</code></pre></div><h2 id=nginx-直接显示系统目录>Nginx 直接显示系统目录</h2>
 <div class=highlight><pre tabindex=0 class=chroma><code class=language-nginx data-lang=nginx><span class=k>server</span> <span class=p>{</span>
     <span class=kn>listen</span>       <span class=mi>8880</span><span class=p>;</span>
     <span class=kn>listen</span>       <span class=s>[::]:8880</span><span class=p>;</span>
