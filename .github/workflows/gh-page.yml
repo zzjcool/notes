@@ -23,6 +23,12 @@ jobs:
       - name: Build
         run: hugo --minify
 
+      # 创建 CNAME，也就是自己的github pages绑定的域名
+      - uses: "finnp/create-file-action@master"
+        env:
+          FILE_NAME: "./public/CNAME"
+          FILE_DATA: "blog.zzj.cool"
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
