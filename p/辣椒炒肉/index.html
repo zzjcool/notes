@@ -1,14 +1,15 @@
 <!doctype html><html lang=zh-cn>
 <head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="记录一些常用的写法"><title>Golang 内置包常用方法</title>
-<link rel=canonical href=/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/>
-<link rel=stylesheet href=/scss/style.min.775dbd4fd34fda61c5273b4bc3415f7c9666414fb6c40aab164a7ded4397da98.css><meta property="og:title" content="Golang 内置包常用方法">
-<meta property="og:description" content="记录一些常用的写法">
-<meta property="og:url" content="/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/">
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="材料准备 主料 辣椒 猪肉 辅料 小米椒 玉米淀粉 油 糖 盐 生抽 老抽 鸡精 大蒜 准备工作 将猪肉切成丝，加入少量老抽和生抽，玉米淀粉腌制，使用淀粉腌制过的猪肉会更"><title>辣椒炒肉</title>
+<link rel=canonical href=/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/>
+<link rel=stylesheet href=/scss/style.min.775dbd4fd34fda61c5273b4bc3415f7c9666414fb6c40aab164a7ded4397da98.css><meta property="og:title" content="辣椒炒肉">
+<meta property="og:description" content="材料准备 主料 辣椒 猪肉 辅料 小米椒 玉米淀粉 油 糖 盐 生抽 老抽 鸡精 大蒜 准备工作 将猪肉切成丝，加入少量老抽和生抽，玉米淀粉腌制，使用淀粉腌制过的猪肉会更">
+<meta property="og:url" content="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/">
 <meta property="og:site_name" content="zzj的笔记">
-<meta property="og:type" content="article"><meta property="article:section" content="Post"><meta property="article:tag" content="Go"><meta property="article:published_time" content="2022-01-04T19:43:41+08:00"><meta property="article:modified_time" content="2022-01-04T19:43:41+08:00">
-<meta name=twitter:title content="Golang 内置包常用方法">
-<meta name=twitter:description content="记录一些常用的写法">
+<meta property="og:type" content="article"><meta property="article:section" content="Post"><meta property="article:tag" content="炒菜"><meta property="article:tag" content="辣"><meta property="article:tag" content="下饭"><meta property="article:published_time" content="2022-02-15T12:06:06+08:00"><meta property="article:modified_time" content="2022-02-15T12:06:06+08:00"><meta property="og:image" content="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg">
+<meta name=twitter:title content="辣椒炒肉">
+<meta name=twitter:description content="材料准备 主料 辣椒 猪肉 辅料 小米椒 玉米淀粉 油 糖 盐 生抽 老抽 鸡精 大蒜 准备工作 将猪肉切成丝，加入少量老抽和生抽，玉米淀粉腌制，使用淀粉腌制过的猪肉会更"><meta name=twitter:card content="summary_large_image">
+<meta name=twitter:image content="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg">
 </head>
 <body class="article-page has-toc">
 <script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"auto")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
@@ -20,23 +21,25 @@ extended">
 </a>
 </div>
 <main class="main full-width">
-<article class=main-article>
+<article class="has-image main-article">
 <header class=article-header>
+<div class=article-image>
+<a href=/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/>
+<img src=/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr_hu5ecfe790bedc4bd537f2edf54cfd5a05_316058_800x0_resize_q75_box.jpg srcset="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr_hu5ecfe790bedc4bd537f2edf54cfd5a05_316058_800x0_resize_q75_box.jpg 800w, /p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr_hu5ecfe790bedc4bd537f2edf54cfd5a05_316058_1600x0_resize_q75_box.jpg 1600w" width=800 height=631 loading=lazy alt="Featured image of post 辣椒炒肉">
+</a>
+</div>
 <div class=article-details>
 <header class=article-category>
-<a href=/categories/%E7%AC%94%E8%AE%B0/>
-笔记
+<a href=/categories/%E8%8F%9C%E8%B0%B1/>
+菜谱
 </a>
 </header>
 <h2 class=article-title>
-<a href=/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/>Golang 内置包常用方法</a>
+<a href=/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/>辣椒炒肉</a>
 </h2>
-<h3 class=article-subtitle>
-记录一些常用的写法
-</h3>
 <footer class=article-time>
 <div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published>Jan 04, 2022</time>
+<time class=article-time--published>Feb 15, 2022</time>
 </div>
 <div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
 <time class=article-time--reading>
@@ -47,34 +50,60 @@ extended">
 </div>
 </header>
 <section class=article-content>
-<h2 id=neturl>net/url</h2>
-<h3 id=添加query>添加query</h3>
-<p>原本有url:<a class=link href=http://domain.com target=_blank rel=noopener>http://domain.com</a>,
-现在想要添加query参数变成:<a class=link href="http://domain.com?key=value" target=_blank rel=noopener>http://domain.com?key=value</a></p>
-<p>可以自己写一个方法去添加query参数。</p>
-<div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=kd>func</span> <span class=nf>TestURL</span><span class=p>(</span><span class=nx>t</span> <span class=o>*</span><span class=nx>testing</span><span class=p>.</span><span class=nx>T</span><span class=p>)</span> <span class=p>{</span>
- <span class=nx>api</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>url</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=s>&#34;http://domain.com&#34;</span><span class=p>)</span>
- <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
-  <span class=nx>t</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
- <span class=p>}</span>
- <span class=nf>URLAddQuery</span><span class=p>(</span><span class=nx>api</span><span class=p>,</span> <span class=s>&#34;key&#34;</span><span class=p>,</span> <span class=s>&#34;value&#34;</span><span class=p>)</span>
- <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>api</span><span class=p>.</span><span class=nf>String</span><span class=p>())</span>
-<span class=p>}</span>
-
-<span class=c1>// URLAddQuery 提供一个URL，然后添加query参数
-</span><span class=c1></span><span class=kd>func</span> <span class=nf>URLAddQuery</span><span class=p>(</span><span class=nx>addr</span> <span class=o>*</span><span class=nx>url</span><span class=p>.</span><span class=nx>URL</span><span class=p>,</span> <span class=nx>key</span><span class=p>,</span> <span class=nx>value</span> <span class=kt>string</span><span class=p>)</span> <span class=p>{</span>
- <span class=nx>query</span> <span class=o>:=</span> <span class=nx>addr</span><span class=p>.</span><span class=nf>Query</span><span class=p>()</span>
- <span class=nx>query</span><span class=p>.</span><span class=nf>Add</span><span class=p>(</span><span class=nx>key</span><span class=p>,</span> <span class=nx>value</span><span class=p>)</span>
- <span class=nx>addr</span><span class=p>.</span><span class=nx>RawQuery</span> <span class=p>=</span> <span class=nx>query</span><span class=p>.</span><span class=nf>Encode</span><span class=p>()</span>
-<span class=p>}</span>
-</code></pre></div><h3 id=url拼接path>url拼接path</h3>
-<div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go> <span class=nx>api</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>url</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=s>&#34;http://domain.com&#34;</span><span class=p>)</span>
- <span class=nx>api</span><span class=p>.</span><span class=nx>Path</span> <span class=p>=</span> <span class=s>&#34;/api/test&#34;</span>
-</code></pre></div>
+<h2 id=材料准备>材料准备</h2>
+<ul>
+<li>主料
+<ul>
+<li>辣椒</li>
+<li>猪肉</li>
+</ul>
+</li>
+<li>辅料
+<ul>
+<li>小米椒</li>
+<li>玉米淀粉</li>
+<li>油</li>
+<li>糖</li>
+<li>盐</li>
+<li>生抽</li>
+<li>老抽</li>
+<li>鸡精</li>
+<li>大蒜</li>
+</ul>
+</li>
+</ul>
+<h2 id=准备工作>准备工作</h2>
+<ol>
+<li>将猪肉切成丝，加入少量老抽和生抽，玉米淀粉腌制，使用淀粉腌制过的猪肉会更加的嫩，腌制十分钟左右就可以。</li>
+<li>辣椒切开，掏出辣椒籽，放一旁备用，根据自己喜好可以加入适量来额小米椒。</li>
+<li>大蒜切粒。</li>
+</ol>
+<h2 id=制作流程>制作流程</h2>
+<ol>
+<li>热锅，加入食用油，等待油热。</li>
+<li>将腌制的猪肉倒入锅中，大火翻炒，炒至变色后关火。</li>
+<li>将肉倒出，放一旁备用。</li>
+<li>剩下的油继续开火，放入大蒜。</li>
+<li>等待有香味后加入辣椒翻炒。</li>
+<li>炒一会后倒入之前的肉，加少量的糖。</li>
+<li>加入适量的鸡精、盐、生抽以及少量老抽提色。</li>
+<li>翻炒后出锅</li>
+</ol>
+<h2 id=成品总结>成品总结</h2>
+<p><figure class=gallery-image style=flex-grow:126;flex-basis:304px>
+<a href=/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg data-size=1618x1276>
+<img src=/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg width=1618 height=1276 srcset="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr_hu5ecfe790bedc4bd537f2edf54cfd5a05_316058_480x0_resize_q75_box.jpg 480w, /p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr_hu5ecfe790bedc4bd537f2edf54cfd5a05_316058_1024x0_resize_q75_box.jpg 1024w" loading=lazy alt=辣椒炒肉>
+</a>
+<figcaption>辣椒炒肉</figcaption>
+</figure></p>
+<p>第一次炒，肉放的太多了（主要还是盒马上买的一份辣椒份量实在是太少了），然后上海这里的辣椒都不是很辣，即使加入了小米椒，辣度还是有限。</p>
+<p>总体来说味道还是很不错的，从小最喜欢的一道菜。</p>
 </section>
 <footer class=article-footer>
 <section class=article-tags>
-<a href=/tags/go/>Go</a>
+<a href=/tags/%E7%82%92%E8%8F%9C/>炒菜</a>
+<a href=/tags/%E8%BE%A3/>辣</a>
+<a href=/tags/%E4%B8%8B%E9%A5%AD/>下饭</a>
 </section>
 <section class=article-copyright><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
 <span>Licensed under CC BY-NC-SA 4.0</span>
@@ -82,18 +111,6 @@ extended">
 </footer>
 </article>
 <aside class=related-contents--wrapper>
-<h2 class=section-title>相关文章</h2>
-<div class=related-contents>
-<div class="flex article-list--tile">
-<article>
-<a href=/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/>
-<div class=article-details>
-<h2 class=article-title>Nginx 相关配置</h2>
-</div>
-</a>
-</article>
-</div>
-</div>
 </aside>
 <footer class=site-footer>
 <section class=copyright>
@@ -151,12 +168,10 @@ Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=
 <div class=widget--toc>
 <nav id=TableOfContents>
 <ol>
-<li><a href=#neturl>net/url</a>
-<ol>
-<li><a href=#添加query>添加query</a></li>
-<li><a href=#url拼接path>url拼接path</a></li>
-</ol>
-</li>
+<li><a href=#材料准备>材料准备</a></li>
+<li><a href=#准备工作>准备工作</a></li>
+<li><a href=#制作流程>制作流程</a></li>
+<li><a href=#成品总结>成品总结</a></li>
 </ol>
 </nav>
 </div>

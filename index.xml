@@ -1,4 +1,61 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Fri, 07 Jan 2022 10:33:38 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Nginx 相关配置</title><link>/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</link><pubDate>Fri, 07 Jan 2022 10:33:38 +0800</pubDate><guid>/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</guid><description>&lt;h2 id="docker启动nginx">Docker启动Nginx&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Tue, 15 Feb 2022 12:06:06 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>辣椒炒肉</title><link>/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/</link><pubDate>Tue, 15 Feb 2022 12:06:06 +0800</pubDate><guid>/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/</guid><description>&lt;img src="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg" alt="Featured image of post 辣椒炒肉" />&lt;h2 id="材料准备">材料准备&lt;/h2>
+&lt;ul>
+&lt;li>主料
+&lt;ul>
+&lt;li>辣椒&lt;/li>
+&lt;li>猪肉&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>辅料
+&lt;ul>
+&lt;li>小米椒&lt;/li>
+&lt;li>玉米淀粉&lt;/li>
+&lt;li>油&lt;/li>
+&lt;li>糖&lt;/li>
+&lt;li>盐&lt;/li>
+&lt;li>生抽&lt;/li>
+&lt;li>老抽&lt;/li>
+&lt;li>鸡精&lt;/li>
+&lt;li>大蒜&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="准备工作">准备工作&lt;/h2>
+&lt;ol>
+&lt;li>将猪肉切成丝，加入少量老抽和生抽，玉米淀粉腌制，使用淀粉腌制过的猪肉会更加的嫩，腌制十分钟左右就可以。&lt;/li>
+&lt;li>辣椒切开，掏出辣椒籽，放一旁备用，根据自己喜好可以加入适量来额小米椒。&lt;/li>
+&lt;li>大蒜切粒。&lt;/li>
+&lt;/ol>
+&lt;h2 id="制作流程">制作流程&lt;/h2>
+&lt;ol>
+&lt;li>热锅，加入食用油，等待油热。&lt;/li>
+&lt;li>将腌制的猪肉倒入锅中，大火翻炒，炒至变色后关火。&lt;/li>
+&lt;li>将肉倒出，放一旁备用。&lt;/li>
+&lt;li>剩下的油继续开火，放入大蒜。&lt;/li>
+&lt;li>等待有香味后加入辣椒翻炒。&lt;/li>
+&lt;li>炒一会后倒入之前的肉，加少量的糖。&lt;/li>
+&lt;li>加入适量的鸡精、盐、生抽以及少量老抽提色。&lt;/li>
+&lt;li>翻炒后出锅&lt;/li>
+&lt;/ol>
+&lt;h2 id="成品总结">成品总结&lt;/h2>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 126;
+flex-basis: 304px"
+>
+&lt;a href="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg" data-size="1618x1276">
+&lt;img src="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg"
+width="1618"
+height="1276"
+srcset="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr_hu5ecfe790bedc4bd537f2edf54cfd5a05_316058_480x0_resize_q75_box.jpg 480w, /p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr_hu5ecfe790bedc4bd537f2edf54cfd5a05_316058_1024x0_resize_q75_box.jpg 1024w"
+loading="lazy"
+alt="辣椒炒肉">
+&lt;/a>
+&lt;figcaption>辣椒炒肉&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>第一次炒，肉放的太多了（主要还是盒马上买的一份辣椒份量实在是太少了），然后上海这里的辣椒都不是很辣，即使加入了小米椒，辣度还是有限。&lt;/p>
+&lt;p>总体来说味道还是很不错的，从小最喜欢的一道菜。&lt;/p></description></item><item><title>Nginx 相关配置</title><link>/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</link><pubDate>Fri, 07 Jan 2022 10:33:38 +0800</pubDate><guid>/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</guid><description>&lt;h2 id="docker启动nginx">Docker启动Nginx&lt;/h2>
 &lt;p>可以使用docker-compose快速的启动Nginx
 docker-compose.yaml文件：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="nt">version&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s1">&amp;#39;3&amp;#39;&lt;/span>&lt;span class="w">
