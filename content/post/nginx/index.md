@@ -11,6 +11,7 @@ draft: false
 tags:
   - Nginx
 categories:
+  - 笔记
 ---
 ## Docker启动Nginx
 

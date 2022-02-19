@@ -11,7 +11,7 @@ draft: false
 tags:
   - "Go"
 categories:
-  - "Go"
+  - 笔记
 ---
 
 ## net/url
