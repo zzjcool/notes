@@ -1,6 +1,6 @@
 ---
 title: "辣椒炒肉"
-description: 
+description: 从小最喜欢的菜
 date: 2022-02-15T12:06:06+08:00
 image: ljcr.jpg
 math: 
