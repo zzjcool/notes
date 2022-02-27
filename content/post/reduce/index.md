@@ -89,4 +89,4 @@ Add返回的Wait我们使用casewait实现，每次refresh将原来的阻塞接�
 
 ## 仓库地址
 
-https://github.com/zzjcool/goutils/tree/main/reduce
+<https://github.com/zzjcool/goutils/tree/main/reduce>
