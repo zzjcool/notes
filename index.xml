@@ -1,83 +1,206 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 27 Feb 2022 16:19:01 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Go协程对齐，等待条件执行，Castwait库实现</title><link>/p/go%E5%8D%8F%E7%A8%8B%E5%AF%B9%E9%BD%90%E7%AD%89%E5%BE%85%E6%9D%A1%E4%BB%B6%E6%89%A7%E8%A1%8Ccastwait%E5%BA%93%E5%AE%9E%E7%8E%B0/</link><pubDate>Sun, 27 Feb 2022 16:19:01 +0800</pubDate><guid>/p/go%E5%8D%8F%E7%A8%8B%E5%AF%B9%E9%BD%90%E7%AD%89%E5%BE%85%E6%9D%A1%E4%BB%B6%E6%89%A7%E8%A1%8Ccastwait%E5%BA%93%E5%AE%9E%E7%8E%B0/</guid><description>&lt;p>Go的groutine使用起来十分的方便，可以帮助开发者快速的实现支持并行的程序，但是并行的程序往往需要根据用户的不同需求进行调度，比较常用的有&lt;code>sync.WaitGroup&lt;/code>，通常是用于等待多个groutine执行完毕后继续后续的任务。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Tue, 15 Mar 2022 23:41:23 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Go Struct 默认值的实现</title><link>/p/go-struct-%E9%BB%98%E8%AE%A4%E5%80%BC%E7%9A%84%E5%AE%9E%E7%8E%B0/</link><pubDate>Tue, 15 Mar 2022 23:41:23 +0800</pubDate><guid>/p/go-struct-%E9%BB%98%E8%AE%A4%E5%80%BC%E7%9A%84%E5%AE%9E%E7%8E%B0/</guid><description>&lt;p>当加载配置的时候，我们通常会将配置设置一个默认值，但是通常默认值不是Go中的空值，比如
+服务的端口号：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">ServerConfig&lt;/span> &lt;span class="kd">struct&lt;/span>&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Port&lt;/span> &lt;span class="kt">uint&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">(){&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">conf&lt;/span>&lt;span class="o">:=&lt;/span>&lt;span class="nf">loadConfig&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="nx">conf&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">ServerConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Port&lt;/span>&lt;span class="o">==&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">conf&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">ServerConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Port&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">8080&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>每次有一个值我们都需要增加一个if语句进行判断，当一个配置有很多的时候，初始化写起来可能就非常的繁琐。&lt;/p>
+&lt;p>幸运的是Go中提供了&lt;code>tag&lt;/code>，我们可以借用tag，结合反射来实现默认值。&lt;/p>
+&lt;p>原理比较简单大概流程就是：&lt;/p>
+&lt;ol>
+&lt;li>通过反射解析当前的结构体&lt;/li>
+&lt;li>查看当前字段的值时候为空值&lt;/li>
+&lt;li>如果为空，读取tag中的default，并初始化&lt;/li>
+&lt;li>不为空直接略过&lt;/li>
+&lt;/ol>
+&lt;p>具体代码可以参考：&lt;a class="link" href="https://github.com/zzjcool/goutils/blob/main/defaults/defauls.go" target="_blank" rel="noopener"
+>https://github.com/zzjcool/goutils/blob/main/defaults/defauls.go&lt;/a>&lt;/p>
+&lt;p>这里给出使用方法：&lt;/p>
+&lt;h2 id="defaults">Defaults&lt;/h2>
+&lt;p>Enforce default values on struct fields.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">User&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Name&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="s">`default:&amp;#34;Goku&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Power&lt;/span> &lt;span class="kt">float64&lt;/span> &lt;span class="s">`default:&amp;#34;9000.01&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">var&lt;/span> &lt;span class="nx">u&lt;/span> &lt;span class="nx">User&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">defaults&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Apply&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="nx">u&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">log&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Fatal&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Uh oh: %v&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">u&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Name&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// Goku
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">u&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Power&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 9000.01
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Defaults are only applied to fields at their zero value.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">Config&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Host&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="s">`default:&amp;#34;0.0.0.0&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Port&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="s">`default:&amp;#34;8000&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">var&lt;/span> &lt;span class="nx">cfg&lt;/span> &lt;span class="nx">Config&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">json&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Unmarshal&lt;/span>&lt;span class="p">([]&lt;/span>&lt;span class="nb">byte&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">`{Host: &amp;#34;charm.sh&amp;#34;}`&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="nx">cfg&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">defaults&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Apply&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="nx">cfg&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">log&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Fatal&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Rats: %v&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">cfg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Host&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// charm.sh
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">cfg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Port&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 8000
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Works well with JSON, Yaml, and so on.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">Config&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Host&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="s">`json:&amp;#34;host&amp;#34; default:&amp;#34;0.0.0.0&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Port&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="s">`json:&amp;#34;port&amp;#34; default:&amp;#34;8000&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Debug&lt;/span> &lt;span class="kt">bool&lt;/span> &lt;span class="s">`json:&amp;#34;debug&amp;#34; default:&amp;#34;true&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="supported-types">Supported Types&lt;/h3>
+&lt;p>The following types are supported:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>string&lt;/code>&lt;/li>
+&lt;li>&lt;code>bool&lt;/code>&lt;/li>
+&lt;li>&lt;code>int&lt;/code>&lt;/li>
+&lt;li>&lt;code>int8&lt;/code>&lt;/li>
+&lt;li>&lt;code>int16&lt;/code>&lt;/li>
+&lt;li>&lt;code>int32&lt;/code> (and &lt;code>rune&lt;/code>, with some caveats)&lt;/li>
+&lt;li>&lt;code>int64&lt;/code>&lt;/li>
+&lt;li>&lt;code>uint&lt;/code>&lt;/li>
+&lt;li>&lt;code>uint8&lt;/code>&lt;/li>
+&lt;li>&lt;code>uint16&lt;/code>&lt;/li>
+&lt;li>&lt;code>uint32&lt;/code>&lt;/li>
+&lt;li>&lt;code>uint64&lt;/code>&lt;/li>
+&lt;li>&lt;code>float32&lt;/code>&lt;/li>
+&lt;li>&lt;code>float64&lt;/code>&lt;/li>
+&lt;li>&lt;code>[]byte&lt;/code>/&lt;code>[]uint8&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>…as well as pointers to those types.&lt;/p>
+&lt;h4 id="embedded-structs">Embedded Structs&lt;/h4>
+&lt;p>Embedded structs are supported. The following will parse as expected:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">GroceryList&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Fruit&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Bananas&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="s">`default:&amp;#34;8&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Pears&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="s">`default:&amp;#34;12&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Vegetables&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Artichokes&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="s">`default:&amp;#34;4&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">SweetPotatoes&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="s">`default:&amp;#34;16&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Embedded structs do not need a &lt;code>default&lt;/code> tag in order to be parsed. Embedded
+structs that are &lt;code>nil&lt;/code> will be initialized with their zero value so they can be
+parsed accoringly.&lt;/p>
+&lt;h4 id="runes-and-int32s">Runes and Int32s&lt;/h4>
+&lt;p>In Go &lt;code>rune&lt;/code> is just an alias for &lt;code>int32&lt;/code>. This presents some ambiguity when
+parsing default values. For example, should &lt;code>&amp;quot;1&amp;quot;&lt;/code> be parsed as a literal &lt;code>1&lt;/code> or
+as a unicode &lt;code>'1'&lt;/code> (which has the &lt;code>int32&lt;/code> value of &lt;code>49&lt;/code>)?&lt;/p>
+&lt;p>Because of this ambiguity we recommend avoiding setting defaults on &lt;code>rune&lt;/code>s.
+That said, this package defaults to parsing &lt;code>int32&lt;/code> as integers. Failing that,
+it tries to parse them as a &lt;code>rune&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// This works as expected...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">type&lt;/span> &lt;span class="nx">Cool&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Fave32BitInteger&lt;/span> &lt;span class="kt">int32&lt;/span> &lt;span class="s">`default:&amp;#34;12&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">FaveChar&lt;/span> &lt;span class="kt">rune&lt;/span> &lt;span class="s">`default:&amp;#34;a&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// ...but these will not.
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">type&lt;/span> &lt;span class="nx">UhOh&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">FaveChar&lt;/span> &lt;span class="kt">rune&lt;/span> &lt;span class="s">`default:&amp;#34;3&amp;#34;`&lt;/span> &lt;span class="c1">// this is a unicode ETX or ctrl+c
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">FaveChar&lt;/span> &lt;span class="kt">rune&lt;/span> &lt;span class="s">`default:&amp;#34;97&amp;#34;`&lt;/span> &lt;span class="c1">// this is a unicode `a`
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这个package本来是：
+github.com/charmbracelet/defaults
+但是原地址无法访问&lt;/p></description></item><item><title>Go协程对齐，等待条件执行，Castwait库实现</title><link>/p/go%E5%8D%8F%E7%A8%8B%E5%AF%B9%E9%BD%90%E7%AD%89%E5%BE%85%E6%9D%A1%E4%BB%B6%E6%89%A7%E8%A1%8Ccastwait%E5%BA%93%E5%AE%9E%E7%8E%B0/</link><pubDate>Sun, 27 Feb 2022 16:19:01 +0800</pubDate><guid>/p/go%E5%8D%8F%E7%A8%8B%E5%AF%B9%E9%BD%90%E7%AD%89%E5%BE%85%E6%9D%A1%E4%BB%B6%E6%89%A7%E8%A1%8Ccastwait%E5%BA%93%E5%AE%9E%E7%8E%B0/</guid><description>&lt;p>Go的groutine使用起来十分的方便，可以帮助开发者快速的实现支持并行的程序，但是并行的程序往往需要根据用户的不同需求进行调度，比较常用的有&lt;code>sync.WaitGroup&lt;/code>，通常是用于等待多个groutine执行完毕后继续后续的任务。&lt;/p>
 &lt;p>但是有时候我们需要多个groutine并行执行后同时等待一个条件满足后再继续执行后续任务，例如之前写的Reduce库提给阻塞的Add方法，当所有的数据flush后所有的Add都停止阻塞，这种行为类似于学校考试，在开考前所有同学提前到考场等待考试开始，考试的开始时间都是统一的，当考试时间到了，广播打铃，所有同学收到信号，开始考试。当然这个时候有同学迟到了，那么因为考试已经开始，他就可以直接进入考场开始考试。&lt;/p>
 &lt;h2 id="需求说明">需求说明&lt;/h2>
 &lt;p>需要一个&lt;code>Wait&lt;/code>接口，当调用的时候，如果条件未满足，将阻塞，同时调用&lt;code>Done&lt;/code>接口的表示条件已经满足，解除所有Wait的阻塞，Wait可以被多个groutine调用，多个Wait接口对应一个Done。&lt;/p>
 &lt;p>如果发生错误，那么错误将通知给所有的Wait的groutine，&lt;/p>
 &lt;h2 id="接口设计">接口设计&lt;/h2>
 &lt;p>为了实现上述的需求，我们设计对应的接口：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="kd">type&lt;/span> &lt;span class="nx">Interface&lt;/span> &lt;span class="kd">interface&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="c1">// Wait 可以阻塞当前Groutine，直到Done被调用，可以获取到Done传入的error
-&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span>
-&lt;span class="c1">// Done 解除所有Wait的阻塞，如果发生错误，将error传入
-&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="实现细节">实现细节&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">Interface&lt;/span> &lt;span class="kd">interface&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// Wait 可以阻塞当前Groutine，直到Done被调用，可以获取到Done传入的error
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// Done 解除所有Wait的阻塞，如果发生错误，将error传入
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="实现细节">实现细节&lt;/h2>
 &lt;p>需要实现以上的需求，可以想到的方式有两种，一种是使用&lt;code>sync.WaitGroup&lt;/code>，还有一种是使用&lt;code>sync.Cond&lt;/code>。同时，根据这个组件的特性，我们把这个库取名为&lt;code>castwait&lt;/code>&lt;/p>
 &lt;h3 id="syncwaitgroup-实现方式">sync.WaitGroup 实现方式&lt;/h3>
 &lt;p>使用sync.WaitGroup实现起来比较简单，调用Add后，使用Wait后可以产生阻塞。&lt;/p>
 &lt;p>设计，对应的结构体，为：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="kd">type&lt;/span> &lt;span class="nx">castWait&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">wg&lt;/span> &lt;span class="nx">sync&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">WaitGroup&lt;/span>
-&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="c1">// 保存调用的错误
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>对应的接口实现为：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="c1">// Wait 阻塞等待完成
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">castWait&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="k">return&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="c1">// Done 完成
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">castWait&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">err&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Done&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="synccond-实现方式">sync.Cond 实现方式&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">castWait&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">wg&lt;/span> &lt;span class="nx">sync&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">WaitGroup&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="c1">// 保存调用的错误
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>对应的接口实现为：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Wait 阻塞等待完成
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">castWait&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Done 完成
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">castWait&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">err&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Done&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="synccond-实现方式">sync.Cond 实现方式&lt;/h3>
 &lt;p>sync.Cond包使用的比较少，具体的Cond包的使用可以参考：&lt;a class="link" href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-sync-primitives/" target="_blank" rel="noopener"
 >https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-sync-primitives/&lt;/a>，下次有时间再补充下sync.Cond的使用。&lt;/p>
 &lt;p>结构的设计与接口的实现：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">
-&lt;span class="kd">type&lt;/span> &lt;span class="nx">condImpl&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">done&lt;/span> &lt;span class="kt">bool&lt;/span>
-&lt;span class="nx">C&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">sync&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Cond&lt;/span>
-&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="c1">// Wait 阻塞等待完成
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">condImpl&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Lock&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="k">defer&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Unlock&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="k">for&lt;/span> &lt;span class="p">!&lt;/span>&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">done&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="k">return&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="c1">// Done 完成
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">condImpl&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">err&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Lock&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">done&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="kc">true&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Unlock&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Broadcast&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="使用方式">使用方式&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="c1">// import (
-&lt;/span>&lt;span class="c1">// &amp;#34;github.com/zzjcool/goutils/castWait&amp;#34;
-&lt;/span>&lt;span class="c1">// )
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="nx">n&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">100000&lt;/span>
-&lt;span class="nx">c&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nf">New&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="nx">wg&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">sync&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">WaitGroup&lt;/span>&lt;span class="p">{}&lt;/span>
-&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">n&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="k">for&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="nx">n&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="o">+=&lt;/span> &lt;span class="mi">1&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="k">go&lt;/span> &lt;span class="kd">func&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span>&lt;span class="o">!=&lt;/span>&lt;span class="kc">nil&lt;/span>&lt;span class="p">{&lt;/span>
-&lt;span class="c1">// do ...
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
-&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Done&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="p">}()&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">exErr&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="仓库地址">仓库地址&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">condImpl&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">done&lt;/span> &lt;span class="kt">bool&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">C&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">sync&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Cond&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Wait 阻塞等待完成
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">condImpl&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Lock&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">defer&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Unlock&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">for&lt;/span> &lt;span class="p">!&lt;/span>&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">done&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Done 完成
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">c&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">condImpl&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="kt">error&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">err&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">err&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Lock&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">done&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="kc">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">L&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Unlock&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">C&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Broadcast&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="使用方式">使用方式&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// import (
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// &amp;#34;github.com/zzjcool/goutils/castWait&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// )
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">n&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">100000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">c&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nf">New&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">wg&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">sync&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">WaitGroup&lt;/span>&lt;span class="p">{}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">n&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">for&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="nx">n&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="o">+=&lt;/span> &lt;span class="mi">1&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">go&lt;/span> &lt;span class="kd">func&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span>&lt;span class="o">!=&lt;/span>&lt;span class="kc">nil&lt;/span>&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// do ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Done&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Done&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">exErr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">wg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="仓库地址">仓库地址&lt;/h2>
 &lt;p>&lt;a class="link" href="https://github.com/zzjcool/goutils/tree/main/castwait" target="_blank" rel="noopener"
 >https://github.com/zzjcool/goutils/tree/main/castwait&lt;/a>&lt;/p></description></item><item><title>业务性能优化，Reduce库实现</title><link>/p/%E4%B8%9A%E5%8A%A1%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96reduce%E5%BA%93%E5%AE%9E%E7%8E%B0/</link><pubDate>Sun, 20 Feb 2022 18:04:30 +0800</pubDate><guid>/p/%E4%B8%9A%E5%8A%A1%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96reduce%E5%BA%93%E5%AE%9E%E7%8E%B0/</guid><description>&lt;p>在业务中我们可能经常会遇到某个接口需要高频的调用，例如数据库更新、插入操作，调用某api，在这里每一次的调用都会有额外的成本，所以无论是数据库还是一些api调用接口，都提供了批量操作的方式，通过批量操作来降低开销，提升效率。&lt;/p>
 &lt;p>有的旧代码，或者业务本身不支持批量操作，所以我们需要对相关的数据进行聚合，转换为批量操作，个人认为这种操作有点类似于MapReduce操作中的Reduce，所以暂且称之为Reduce吧。&lt;/p>
@@ -92,14 +215,14 @@
 &lt;p>为了模拟原来单次操作产生的阻塞，所以也应当支持阻塞，当该批所有的数据被批量处理完成后，代码可以执行下一步逻辑。&lt;/p>
 &lt;p>同时应当可以捕获返回的错误，便于后续的处理。&lt;/p>
 &lt;h2 id="接口设计">接口设计&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="kd">type&lt;/span> &lt;span class="nx">ReduceWait&lt;/span> &lt;span class="kd">interface&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="kd">type&lt;/span> &lt;span class="nx">Interface&lt;/span> &lt;span class="kd">interface&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span> &lt;span class="kd">interface&lt;/span>&lt;span class="p">{})&lt;/span> &lt;span class="nx">ReduceWait&lt;/span>
-&lt;span class="nf">Destroy&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>对于Reduce核心操作就是&lt;code>Add&lt;/code>，其作用就是将数据插入到cache中，之后返回个ReduceWait接口。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">ReduceWait&lt;/span> &lt;span class="kd">interface&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">error&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">type&lt;/span> &lt;span class="nx">Interface&lt;/span> &lt;span class="kd">interface&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span> &lt;span class="kd">interface&lt;/span>&lt;span class="p">{})&lt;/span> &lt;span class="nx">ReduceWait&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nf">Destroy&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>对于Reduce核心操作就是&lt;code>Add&lt;/code>，其作用就是将数据插入到cache中，之后返回个ReduceWait接口。&lt;/p>
 &lt;p>&lt;code>ReduceWait&lt;/code>接口只有一个方法&lt;code>Wait() error&lt;/code>，当插入数据后，可以调用这个方法产生阻塞，等待到内部的数据被消费后将返回error类型。&lt;/p>
 &lt;h2 id="实现细节">实现细节&lt;/h2>
 &lt;p>具体实现部分主要是交由&lt;code>ReduceImple&lt;/code>结构体来实现。除了实现Interface的接口的方法外，还有：&lt;/p>
@@ -114,22 +237,22 @@
 &lt;p>在初始化的时候需要传入一个&lt;code>HandleFunc&lt;/code>，这个函数的签名为&lt;code>type HandleFunc func(datas []interface{}) error&lt;/code>
 会在每一次的refresh操作中被调用，这里返回的error会被上抛到wait返回。&lt;/p>
 &lt;h2 id="使用方式">使用方式&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="c1">// import (
-&lt;/span>&lt;span class="c1">// &amp;#34;github.com/zzjcool/goutils/reduce&amp;#34;
-&lt;/span>&lt;span class="c1">// )
-&lt;/span>&lt;span class="c1">// refresh调用的函数
-&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nx">doFunc&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="kd">func&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">datas&lt;/span> &lt;span class="p">[]&lt;/span>&lt;span class="kd">interface&lt;/span>&lt;span class="p">{})&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">datas&lt;/span>&lt;span class="p">))&lt;/span>
-&lt;span class="k">return&lt;/span> &lt;span class="kc">nil&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="c1">// 创建一个reduce，300ms刷新一次，同时最大容量是100
-&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nx">rdc&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">reduce&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">New&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">doFunc&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">300&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">100&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="c1">// 加入一个数据，同时同步等待完成，如果不调用就是异步操作
-&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">rdc&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;test&amp;#34;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="仓库地址">仓库地址&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// import (
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// &amp;#34;github.com/zzjcool/goutils/reduce&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// )
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// refresh调用的函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">doFunc&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="kd">func&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">datas&lt;/span> &lt;span class="p">[]&lt;/span>&lt;span class="kd">interface&lt;/span>&lt;span class="p">{})&lt;/span> &lt;span class="kt">error&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">datas&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="kc">nil&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 创建一个reduce，300ms刷新一次，同时最大容量是100
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">rdc&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">reduce&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">New&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">doFunc&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">300&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">100&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 加入一个数据，同时同步等待完成，如果不调用就是异步操作
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">rdc&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;test&amp;#34;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nf">Wait&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="仓库地址">仓库地址&lt;/h2>
 &lt;p>&lt;a class="link" href="https://github.com/zzjcool/goutils/tree/main/reduce" target="_blank" rel="noopener"
 >https://github.com/zzjcool/goutils/tree/main/reduce&lt;/a>&lt;/p></description></item><item><title>辣椒炒肉</title><link>/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/</link><pubDate>Tue, 15 Feb 2022 12:06:06 +0800</pubDate><guid>/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/</guid><description>&lt;img src="/p/%E8%BE%A3%E6%A4%92%E7%82%92%E8%82%89/ljcr.jpg" alt="Featured image of post 辣椒炒肉" />&lt;h2 id="材料准备">材料准备&lt;/h2>
 &lt;ul>
@@ -191,81 +314,87 @@ alt="辣椒炒肉">
 &lt;p>总体来说味道还是很不错的，从小最喜欢的一道菜。&lt;/p></description></item><item><title>Nginx 相关配置</title><link>/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</link><pubDate>Fri, 07 Jan 2022 10:33:38 +0800</pubDate><guid>/p/nginx-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/</guid><description>&lt;h2 id="docker启动nginx">Docker启动Nginx&lt;/h2>
 &lt;p>可以使用docker-compose快速的启动Nginx
 docker-compose.yaml文件：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="nt">version&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s1">&amp;#39;3&amp;#39;&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">nginx&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">container_name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">nginx&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">network_mode&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;host&amp;#34;&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w"> &lt;/span>- &lt;span class="l">./nginx:/etc/nginx/conf.d&lt;/span>&lt;span class="w">
-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">unless-stopped&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>可以在当前目录下的nginx目录添加任意配置&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">version&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s1">&amp;#39;3&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">nginx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">container_name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">nginx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">network_mode&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;host&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">./nginx:/etc/nginx/conf.d&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">unless-stopped&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>可以在当前目录下的nginx目录添加任意配置&lt;/p>
 &lt;h2 id="nginx-反向代理websocket">Nginx 反向代理Websocket&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx"> &lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="kn">listen&lt;/span> &lt;span class="mi">48265&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">server_name&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="kn">proxy_pass&lt;/span> &lt;span class="s">http://domain:48265&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_http_version&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="s">.1&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Upgrade&lt;/span> &lt;span class="nv">$http_upgrade&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Host&lt;/span> &lt;span class="nv">$host&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Connection&lt;/span> &lt;span class="s">&amp;#34;Upgrade&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>最后一行配置可以转发ws&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx">&lt;span class="line">&lt;span class="cl"> &lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">listen&lt;/span> &lt;span class="mi">48265&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">server_name&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_pass&lt;/span> &lt;span class="s">http://domain:48265&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_http_version&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="s">.1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Upgrade&lt;/span> &lt;span class="nv">$http_upgrade&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Host&lt;/span> &lt;span class="nv">$host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Connection&lt;/span> &lt;span class="s">&amp;#34;Upgrade&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>最后一行配置可以转发ws&lt;/p>
 &lt;p>有时候我们的nginx反向代理会出错，但是我们检查发现上游服务器是正常的，那这可能
 是因为反向代理后端发生dns解析的变动（如k8s服务重启或者ddns），所以
 需要配置nginx的dns解析（resolver 8.8.8.8），同时反向代理的后端地址需要写为变量：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx"> &lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="kn">listen&lt;/span> &lt;span class="mi">48265&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">server_name&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">resolver&lt;/span> &lt;span class="mi">119&lt;/span>&lt;span class="s">.29.29.29&lt;/span> &lt;span class="mi">8&lt;/span>&lt;span class="s">.8.8.8&lt;/span> &lt;span class="s">valid=30s&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">set&lt;/span> &lt;span class="nv">$proxy_pass_url&lt;/span> &lt;span class="s">http://domain:48265&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="kn">proxy_pass&lt;/span> &lt;span class="nv">$proxy_pass_url&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_http_version&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="s">.1&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Upgrade&lt;/span> &lt;span class="nv">$http_upgrade&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Host&lt;/span> &lt;span class="nv">$host&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Connection&lt;/span> &lt;span class="s">&amp;#34;Upgrade&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="nginx-直接显示系统目录">Nginx 直接显示系统目录&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx">&lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="kn">listen&lt;/span> &lt;span class="mi">8880&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">listen&lt;/span> &lt;span class="s">[::]:8880&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">server_name&lt;/span> &lt;span class="s">domain.com&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span>
-&lt;span class="p">{&lt;/span>
-&lt;span class="kn">root&lt;/span> &lt;span class="s">/data&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">autoindex&lt;/span> &lt;span class="no">on&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">autoindex_exact_size&lt;/span> &lt;span class="no">off&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">autoindex_localtime&lt;/span> &lt;span class="no">on&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="kn">charset&lt;/span> &lt;span class="s">utf-8,gbk&lt;/span>&lt;span class="p">;&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>root /data&lt;/code>表示实际的目录位置&lt;/p></description></item><item><title>Golang 内置包常用方法</title><link>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</link><pubDate>Tue, 04 Jan 2022 19:43:41 +0800</pubDate><guid>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</guid><description>&lt;h2 id="neturl">net/url&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx">&lt;span class="line">&lt;span class="cl"> &lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">listen&lt;/span> &lt;span class="mi">48265&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">server_name&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">resolver&lt;/span> &lt;span class="mi">119&lt;/span>&lt;span class="s">.29.29.29&lt;/span> &lt;span class="mi">8&lt;/span>&lt;span class="s">.8.8.8&lt;/span> &lt;span class="s">valid=30s&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">set&lt;/span> &lt;span class="nv">$proxy_pass_url&lt;/span> &lt;span class="s">http://domain:48265&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_pass&lt;/span> &lt;span class="nv">$proxy_pass_url&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_http_version&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="s">.1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Upgrade&lt;/span> &lt;span class="nv">$http_upgrade&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Host&lt;/span> &lt;span class="nv">$host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">proxy_set_header&lt;/span> &lt;span class="s">Connection&lt;/span> &lt;span class="s">&amp;#34;Upgrade&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="nginx-直接显示系统目录">Nginx 直接显示系统目录&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-nginx" data-lang="nginx">&lt;span class="line">&lt;span class="cl">&lt;span class="k">server&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">listen&lt;/span> &lt;span class="mi">8880&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">listen&lt;/span> &lt;span class="s">[::]:8880&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">server_name&lt;/span> &lt;span class="s">domain.com&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">location&lt;/span> &lt;span class="s">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">root&lt;/span> &lt;span class="s">/data&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">autoindex&lt;/span> &lt;span class="no">on&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">autoindex_exact_size&lt;/span> &lt;span class="no">off&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">autoindex_localtime&lt;/span> &lt;span class="no">on&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kn">charset&lt;/span> &lt;span class="s">utf-8,gbk&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>root /data&lt;/code>表示实际的目录位置&lt;/p></description></item><item><title>Golang 内置包常用方法</title><link>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</link><pubDate>Tue, 04 Jan 2022 19:43:41 +0800</pubDate><guid>/p/golang-%E5%86%85%E7%BD%AE%E5%8C%85%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/</guid><description>&lt;h2 id="neturl">net/url&lt;/h2>
 &lt;h3 id="添加query">添加query&lt;/h3>
 &lt;p>原本有url:&lt;a class="link" href="http://domain.com" target="_blank" rel="noopener"
 >http://domain.com&lt;/a>,
 现在想要添加query参数变成:&lt;a class="link" href="http://domain.com?key=value" target="_blank" rel="noopener"
 >http://domain.com?key=value&lt;/a>&lt;/p>
 &lt;p>可以自己写一个方法去添加query参数。&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="kd">func&lt;/span> &lt;span class="nf">TestURL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">testing&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">T&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Parse&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;http://domain.com&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">t&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Fatal&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="nf">URLAddQuery&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;key&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;value&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">api&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">String&lt;/span>&lt;span class="p">())&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;span class="c1">// URLAddQuery 提供一个URL，然后添加query参数
-&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">URLAddQuery&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">addr&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">URL&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">key&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">value&lt;/span> &lt;span class="kt">string&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
-&lt;span class="nx">query&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">addr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Query&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="nx">query&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">key&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">value&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="nx">addr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">RawQuery&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">query&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Encode&lt;/span>&lt;span class="p">()&lt;/span>
-&lt;span class="p">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="url拼接path">url拼接path&lt;/h3>
-&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go"> &lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Parse&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;http://domain.com&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
-&lt;span class="nx">api&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Path&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;/api/test&amp;#34;&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">func&lt;/span> &lt;span class="nf">TestURL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">testing&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">T&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Parse&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;http://domain.com&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">t&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Fatal&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">err&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nf">URLAddQuery&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;key&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;value&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">api&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">String&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// URLAddQuery 提供一个URL，然后添加query参数
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">URLAddQuery&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">addr&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">URL&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">key&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">value&lt;/span> &lt;span class="kt">string&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">query&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">addr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Query&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">query&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">key&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">value&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">addr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">RawQuery&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">query&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Encode&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="url拼接path">url拼接path&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">api&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">url&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Parse&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;http://domain.com&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">api&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Path&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;/api/test&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
