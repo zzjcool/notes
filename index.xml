@@ -1,4 +1,71 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 20 Mar 2022 03:30:25 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>自引用函数和配置设计</title><link>/p/%E8%87%AA%E5%BC%95%E7%94%A8%E5%87%BD%E6%95%B0%E5%92%8C%E9%85%8D%E7%BD%AE%E8%AE%BE%E8%AE%A1/</link><pubDate>Sun, 20 Mar 2022 03:30:25 +0800</pubDate><guid>/p/%E8%87%AA%E5%BC%95%E7%94%A8%E5%87%BD%E6%95%B0%E5%92%8C%E9%85%8D%E7%BD%AE%E8%AE%BE%E8%AE%A1/</guid><description>&lt;p>最近发现一篇文章&lt;a class="link" href="https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html" target="_blank" rel="noopener"
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Thu, 16 Jun 2022 23:10:49 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>使用git-crypt对Git仓库中的敏感文件进行加密</title><link>/p/%E4%BD%BF%E7%94%A8git-crypt%E5%AF%B9git%E4%BB%93%E5%BA%93%E4%B8%AD%E7%9A%84%E6%95%8F%E6%84%9F%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E5%8A%A0%E5%AF%86/</link><pubDate>Thu, 16 Jun 2022 23:10:49 +0800</pubDate><guid>/p/%E4%BD%BF%E7%94%A8git-crypt%E5%AF%B9git%E4%BB%93%E5%BA%93%E4%B8%AD%E7%9A%84%E6%95%8F%E6%84%9F%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E5%8A%A0%E5%AF%86/</guid><description>&lt;h1 id="使用git-crypt对git仓库中的敏感文件进行加密">使用git-crypt对Git仓库中的敏感文件进行加密&lt;/h1>
+&lt;h2 id="安装">安装&lt;/h2>
+&lt;p>依赖：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;/th>
+&lt;th>Debian/Ubuntu package&lt;/th>
+&lt;th>RHEL/Centos package&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Make&lt;/td>
+&lt;td>make&lt;/td>
+&lt;td>make&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>A C++11 compiler (e.g. gcc 4.9+)&lt;/td>
+&lt;td>g++&lt;/td>
+&lt;td>gcc-c++&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>OpenSSL development files&lt;/td>
+&lt;td>libssl-dev&lt;/td>
+&lt;td>openssl-devel&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>有以上依赖后可以安装git-crypt&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#!/bin/sh
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cp">&lt;/span>&lt;span class="c1"># install git-crypt&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">mkdir ~/tmp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> ~/tmp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">git clone https://github.com/AGWA/git-crypt.git
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> git-crypt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make install
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># clean&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">rm -rf ~/tmp
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>mac 安装：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">brew install git-crypt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="加密">加密&lt;/h2>
+&lt;p>git-crypt 初始化：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">git-crypt init
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="配置需要加密的文件">配置需要加密的文件&lt;/h2>
+&lt;p>在项目根目录中创建&lt;code>.gitattributes&lt;/code>文件，这个文件可以设置哪些文件需要加密&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="cl">*.go filter=git-crypt diff=git-crypt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">*.yaml filter=git-crypt diff=git-crypt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">template.md filter=git-crypt diff=git-crypt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">output.md filter=git-crypt diff=git-crypt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">code/** filter=git-crypt diff=git-crypt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>可以自定义需要加密的具体文件或者指定文件格式的文件或者是整个目录加密。&lt;/p>
+&lt;h2 id="导出密钥">导出密钥&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">git-crypt export-key ./git-crypt-key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在&lt;code>.gitignore&lt;/code>中加入&lt;code>git-crypt-key&lt;/code>来忽略key文件&lt;/p>
+&lt;p>导出的密钥需要另外存放并且妥善保管，也可以使用base64编码key文件为文本格式：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">cat git-crypt-key &lt;span class="p">|&lt;/span> base64
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 需要导入密钥的时候可以解码base64&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;&amp;lt;git-crypt-key 的base64编码&amp;gt;&amp;#34;&lt;/span> &lt;span class="p">|&lt;/span> base64 -d &amp;gt; git-crypt-key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="解密">解密&lt;/h2>
+&lt;p>解密需要有之前加密的key文件git-crypt-key&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">git-crypt unlock ./git-crypt-key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>对于每个仓库之需要执行一次即可。&lt;/p></description></item><item><title>自引用函数和配置设计</title><link>/p/%E8%87%AA%E5%BC%95%E7%94%A8%E5%87%BD%E6%95%B0%E5%92%8C%E9%85%8D%E7%BD%AE%E8%AE%BE%E8%AE%A1/</link><pubDate>Sun, 20 Mar 2022 03:30:25 +0800</pubDate><guid>/p/%E8%87%AA%E5%BC%95%E7%94%A8%E5%87%BD%E6%95%B0%E5%92%8C%E9%85%8D%E7%BD%AE%E8%AE%BE%E8%AE%A1/</guid><description>&lt;p>最近发现一篇文章&lt;a class="link" href="https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html" target="_blank" rel="noopener"
 >&lt;em>Self-referential functions and the design of options&lt;/em>&lt;/a>介绍了一种很好的实现配置的方式，目前这种方式
 在许多的开源库中被使用，比如GRPC：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">conn&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">err&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">grpc&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Dial&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="o">*&lt;/span>&lt;span class="nx">addr&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">grpc&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">WithTransportCredentials&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">insecure&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">NewCredentials&lt;/span>&lt;span class="p">()))&lt;/span>
