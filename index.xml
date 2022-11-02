@@ -1,4 +1,44 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Thu, 16 Jun 2022 23:10:49 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>使用git-crypt对Git仓库中的敏感文件进行加密</title><link>/p/%E4%BD%BF%E7%94%A8git-crypt%E5%AF%B9git%E4%BB%93%E5%BA%93%E4%B8%AD%E7%9A%84%E6%95%8F%E6%84%9F%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E5%8A%A0%E5%AF%86/</link><pubDate>Thu, 16 Jun 2022 23:10:49 +0800</pubDate><guid>/p/%E4%BD%BF%E7%94%A8git-crypt%E5%AF%B9git%E4%BB%93%E5%BA%93%E4%B8%AD%E7%9A%84%E6%95%8F%E6%84%9F%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E5%8A%A0%E5%AF%86/</guid><description>&lt;h1 id="使用git-crypt对git仓库中的敏感文件进行加密">使用git-crypt对Git仓库中的敏感文件进行加密&lt;/h1>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Wed, 02 Nov 2022 19:21:47 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Kubernetes创建普通用户kubeconfig</title><link>/p/kubernetes%E5%88%9B%E5%BB%BA%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7kubeconfig/</link><pubDate>Wed, 02 Nov 2022 19:21:47 +0800</pubDate><guid>/p/kubernetes%E5%88%9B%E5%BB%BA%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7kubeconfig/</guid><description>&lt;h1 id="kubernetes创建普通用户kubeconfig">Kubernetes创建普通用户kubeconfig&lt;/h1>
+&lt;p>提供kubernetes集群管理权限的方式包括使用kubeconfig以及serviceaccount，其中kubeconfig常用于在集群外部使用kubectl对集群进行调用。&lt;/p>
+&lt;p>这里记录一下创建kubeconfig的方法。&lt;/p>
+&lt;h2 id="创建私钥">创建私钥&lt;/h2>
+&lt;p>这里以创建用户&lt;code>myuser&lt;/code>为例&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">openssl genrsa -out myuser.key &lt;span class="m">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl req -new -key myuser.key -out myuser.csr
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>Organization Name&lt;/code>表示用户所属的组，&lt;code>Common Name&lt;/code>为用户&lt;/p>
+&lt;h2 id="创建certificatesigningrequest">创建CertificateSigningRequest&lt;/h2>
+&lt;p>需要使用kubectl创建证书签名请求&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">cat &lt;span class="s">&amp;lt;&amp;lt;EOF | kubectl apply -f -
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">apiVersion: certificates.k8s.io/v1
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">kind: CertificateSigningRequest
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">metadata:
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s"> name: myuser
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">spec:
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s"> request: &amp;lt;CSR 文件内容的 base64 编码值。 要得到该值，可以执行命令 cat myuser.csr | base64 |&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s"> signerName: kubernetes.io/kube-apiserver-client
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s"> usages:
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s"> - client auth
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">EOF&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>通过kubectl创建了myuser用户的证书签发请求&lt;/p>
+&lt;h2 id="批准证书">批准证书&lt;/h2>
+&lt;p>查看当前的证书签名请求&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">kubectl get csr
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>批准请求&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">kubectl certificate approve myuser
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="获取证书">获取证书&lt;/h2>
+&lt;p>将证书输出到myuser.crt中&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">kubectl get csr myuser -o &lt;span class="nv">jsonpath&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;{.status.certificate}&amp;#39;&lt;/span>&lt;span class="p">|&lt;/span> base64 -d &amp;gt; myuser.crt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="创建角色和角色绑定">创建角色和角色绑定&lt;/h2>
+&lt;p>如果是集群范围使用ClusterRole和ClusterRoleBinding，命名空间的使用Role和RoleBinding&lt;/p>
+&lt;p>将用户myuser和Role绑定。&lt;/p>
+&lt;h2 id="添加到kubeconfig">添加到kubeconfig&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 添加用户凭据&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl config set-credentials myuser --client-key&lt;span class="o">=&lt;/span>myuser.key --client-certificate&lt;span class="o">=&lt;/span>myuser.crt --embed-certs&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 设置上下文&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl config set-context myuser --cluster&lt;span class="o">=&lt;/span>kubernetes --user&lt;span class="o">=&lt;/span>myuser
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 使用上下文&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl config use-context myuser
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这里上下文的集群kubernetes需要替换成自己的集群&lt;/p></description></item><item><title>使用git-crypt对Git仓库中的敏感文件进行加密</title><link>/p/%E4%BD%BF%E7%94%A8git-crypt%E5%AF%B9git%E4%BB%93%E5%BA%93%E4%B8%AD%E7%9A%84%E6%95%8F%E6%84%9F%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E5%8A%A0%E5%AF%86/</link><pubDate>Thu, 16 Jun 2022 23:10:49 +0800</pubDate><guid>/p/%E4%BD%BF%E7%94%A8git-crypt%E5%AF%B9git%E4%BB%93%E5%BA%93%E4%B8%AD%E7%9A%84%E6%95%8F%E6%84%9F%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E5%8A%A0%E5%AF%86/</guid><description>&lt;h1 id="使用git-crypt对git仓库中的敏感文件进行加密">使用git-crypt对Git仓库中的敏感文件进行加密&lt;/h1>
 &lt;h2 id="安装">安装&lt;/h2>
 &lt;p>依赖：&lt;/p>
 &lt;table>
