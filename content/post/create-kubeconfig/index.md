@@ -9,7 +9,9 @@ hidden: false
 comments: true
 draft: false
 tags:
+  - Kubernetes
 categories:
+  - 笔记
 ---
 
 # Kubernetes创建普通用户kubeconfig
@@ -50,15 +52,16 @@ EOF
 
 通过kubectl创建了myuser用户的证书签发请求
 
-
 ## 批准证书
 
 查看当前的证书签名请求
+
 ```bash
 kubectl get csr
 ```
 
 批准请求
+
 ```bash
 kubectl certificate approve myuser
 ```
@@ -66,6 +69,7 @@ kubectl certificate approve myuser
 ## 获取证书
 
 将证书输出到myuser.crt中
+
 ```bash
 kubectl get csr myuser -o jsonpath='{.status.certificate}'| base64 -d > myuser.crt
 ```
@@ -75,7 +79,6 @@ kubectl get csr myuser -o jsonpath='{.status.certificate}'| base64 -d > myuser.c
 如果是集群范围使用ClusterRole和ClusterRoleBinding，命名空间的使用Role和RoleBinding
 
 将用户myuser和Role绑定。
-
 
 ## 添加到kubeconfig
 
