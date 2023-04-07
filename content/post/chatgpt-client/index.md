@@ -22,6 +22,9 @@ OpenAI 的 ChatGPT 有两种方式使用，分别是网页版，也就是 chat.o
 
 - IOS
   - [OpenCat](https://apps.apple.com/app/id6445999201)
+  - [AMA](https://apps.apple.com/app/id6446135619)
+  - [AssisChat](https://apps.apple.com/app/id6446092669)
+
 - Android
 - MacOS
   - [OpenCat](https://apps.apple.com/app/id6445999201)
