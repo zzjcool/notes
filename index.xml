@@ -1,4 +1,74 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 06 Nov 2022 22:37:04 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Vue 加载文件为文本格式</title><link>/p/vue-%E5%8A%A0%E8%BD%BD%E6%96%87%E4%BB%B6%E4%B8%BA%E6%96%87%E6%9C%AC%E6%A0%BC%E5%BC%8F/</link><pubDate>Sun, 06 Nov 2022 22:37:04 +0800</pubDate><guid>/p/vue-%E5%8A%A0%E8%BD%BD%E6%96%87%E4%BB%B6%E4%B8%BA%E6%96%87%E6%9C%AC%E6%A0%BC%E5%BC%8F/</guid><description>&lt;h1 id="vue-加载文件为文本格式">Vue 加载文件为文本格式&lt;/h1>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>zzj的笔记</title><link>/</link><description>Recent content on zzj的笔记</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Fri, 07 Apr 2023 06:08:46 +0800</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>ChatGPT 客户端</title><link>/p/chatgpt-%E5%AE%A2%E6%88%B7%E7%AB%AF/</link><pubDate>Fri, 07 Apr 2023 06:08:46 +0800</pubDate><guid>/p/chatgpt-%E5%AE%A2%E6%88%B7%E7%AB%AF/</guid><description>&lt;h1 id="chatgpt-客户端">ChatGPT 客户端&lt;/h1>
+&lt;p>OpenAI 的 ChatGPT 有两种方式使用，分别是网页版，也就是 chat.openai.com，以及 API，前者已经屏蔽了亚洲区域，并且大型 IDC 的梯子也都上不去，所以使用 API 的方式更为便捷。
+这里介绍一下常见的客户端。&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>IOS&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://apps.apple.com/app/id6445999201" target="_blank" rel="noopener"
+>OpenCat&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://apps.apple.com/app/id6446135619" target="_blank" rel="noopener"
+>AMA&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://apps.apple.com/app/id6446092669" target="_blank" rel="noopener"
+>AssisChat&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>Android&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>MacOS&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://apps.apple.com/app/id6445999201" target="_blank" rel="noopener"
+>OpenCat&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>Windows&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Web&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="opencat-使用">OpenCat 使用&lt;/h2>
+&lt;ol>
+&lt;li>下载 APP &lt;a class="link" href="https://apps.apple.com/app/id6445999201" target="_blank" rel="noopener"
+>OpenCat&lt;/a>&lt;/li>
+&lt;li>打开 APP，点击右下角 Settings 按钮，输入 API Key&lt;/li>
+&lt;/ol>
+&lt;div align=center style="overflow:hidden">
+&lt;img src="openCat-key.jpeg" style="width:80%;max-width:400px"/>
+&lt;/div>
+3. 点击校验没问题即可使用
+&lt;h2 id="使用代理">使用代理&lt;/h2>
+&lt;p>如果没有OpenAI的账号或者IP被墙，可以使用&lt;a class="link" href="https://fastgo.run" target="_blank" rel="noopener"
+>FastGo&lt;/a>，提供的中转功能&lt;/p>
+&lt;ol>
+&lt;li>打开左侧客户端&lt;/li>
+&lt;/ol>
+&lt;div align=center style="overflow:hidden">
+&lt;img src="step1.png" style="width:90%;max-width:900px"/>
+&lt;/div>
+&lt;ol start="2">
+&lt;li>点击生成Key&lt;/li>
+&lt;/ol>
+&lt;div align=center style="overflow:hidden">
+&lt;img src="step2.png" style="width:90%;max-width:900px"/>
+&lt;/div>
+&lt;ol start="3">
+&lt;li>
+&lt;p>复制自己的key&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>在客户端中输入自己的Key&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>客户端中自定义API域名，以OpenCat为例，输入&lt;code>api.fastgo.run&lt;/code>&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;div align=center style="overflow:hidden">
+&lt;img src="openCat-api.jpeg" style="width:80%;max-width:400px"/>
+&lt;/div></description></item><item><title>Vue 加载文件为文本格式</title><link>/p/vue-%E5%8A%A0%E8%BD%BD%E6%96%87%E4%BB%B6%E4%B8%BA%E6%96%87%E6%9C%AC%E6%A0%BC%E5%BC%8F/</link><pubDate>Sun, 06 Nov 2022 22:37:04 +0800</pubDate><guid>/p/vue-%E5%8A%A0%E8%BD%BD%E6%96%87%E4%BB%B6%E4%B8%BA%E6%96%87%E6%9C%AC%E6%A0%BC%E5%BC%8F/</guid><description>&lt;h1 id="vue-加载文件为文本格式">Vue 加载文件为文本格式&lt;/h1>
 &lt;p>使用Vue开发的时候，我们可能需要读取文本文件，这个时候需要使用&lt;code>raw-loader&lt;/code>&lt;/p>
 &lt;h2 id="安装">安装&lt;/h2>
 &lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">npm install raw-loader --save-dev
