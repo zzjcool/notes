@@ -1,0 +1,155 @@
+{{ $style := `
+<style>
+  .mermaid-wrapper {
+    position: relative;
+    overflow: hidden;
+    margin: 1rem 0;
+    cursor: grab;
+    background-color: var(--pre-background-color);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    height: 450px;
+  }
+  .mermaid-wrapper:active {
+    cursor: grabbing;
+  }
+  .mermaid-container {
+    position: relative;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease;
+    will-change: transform;
+  }
+  .mermaid-reset {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: auto;
+  }
+  .mermaid-reset-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 16px;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .mermaid-wrapper:hover .mermaid-reset {
+    opacity: 1;
+  }
+  .mermaid-reset:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
+</style>
+` }}
+<div class="mermaid-wrapper">
+  <div class="mermaid-reset-wrapper">
+    <button class="mermaid-reset"><span class="material-icons">restart_alt</span></button>
+  </div>
+  <div class="mermaid-container">
+    <pre class="mermaid">
+    {{- .Inner | htmlEscape | safeHTML }}
+    </pre>
+  </div>
+</div>
+{{ .Page.Store.Set "hasMermaid" true }}
+{{ $style | safeHTML }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const wrappers = document.querySelectorAll('.mermaid-wrapper');
+    wrappers.forEach(wrapper => {
+      const container = wrapper.querySelector('.mermaid-container');
+      const resetButton = wrapper.querySelector('.mermaid-reset');
+      let isDragging = false;
+      let startX, startY;
+      let matrix = [1, 0, 0, 1, 0, 0]; // scale_x, skew_y, skew_x, scale_y, translate_x, translate_y
+
+      function applyMatrix() {
+        container.style.transform = `matrix(${matrix.join(',')})`;
+      }
+
+      // 鼠标滚轮缩放
+      wrapper.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // 当前缩放值
+        const currentScale = matrix[0];
+        
+        // 计算鼠标相对于容器的位置（考虑当前的变换）
+        const containerRect = container.getBoundingClientRect();
+        const mouseRelativeX = (mouseX - matrix[4]) / matrix[0];
+        const mouseRelativeY = (mouseY - matrix[5]) / matrix[0];
+
+        // 计算新的缩放值
+        const delta = e.deltaY;
+        const scaleChange = delta > 0 ? 0.95 : 1.05;
+        const newScale = currentScale * scaleChange;
+
+        if (newScale >= 0.1 && newScale <= 10) {
+          // 更新矩阵
+          const scaleDiff = newScale - currentScale;
+          matrix[0] = matrix[3] = newScale;
+          
+          // 调整平移以保持鼠标位置不变
+          matrix[4] += -(mouseRelativeX * scaleDiff);
+          matrix[5] += -(mouseRelativeY * scaleDiff);
+          
+          applyMatrix();
+        }
+      });
+
+      // 鼠标拖拽
+      wrapper.addEventListener('mousedown', (e) => {
+        if (e.target === resetButton) return; // 如果点击的是重置按钮，不启动拖拽
+        isDragging = true;
+        startX = e.clientX - matrix[4];
+        startY = e.clientY - matrix[5];
+        wrapper.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        matrix[4] = e.clientX - startX;  // translate_x
+        matrix[5] = e.clientY - startY;  // translate_y
+        applyMatrix();
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        wrapper.style.cursor = 'grab';
+      });
+
+      // 重置按钮点击事件
+      resetButton.addEventListener('click', () => {
+        matrix = [1, 0, 0, 1, 0, 0];
+        applyMatrix();
+      });
+
+      // 双击重置
+      wrapper.addEventListener('dblclick', () => {
+        matrix = [1, 0, 0, 1, 0, 0];
+        applyMatrix();
+      });
+    });
+  });
+</script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
