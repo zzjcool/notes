@@ -12,7 +12,7 @@ build:
 	docker build --rm --no-cache -t ${IMAGE_URL}:$(RELEASE_TAG) -t ${IMAGE_URL} .
 
 submodules:
-	git submodule update --recursive --remote
+	git submodule update --init --recursive
 
 release: build
 	docker push ${IMAGE_URL}:$(RELEASE_TAG)
